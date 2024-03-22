@@ -64,7 +64,7 @@ Once created, the images in the `train`and `test` folders will need to be manual
 
 This file can then be annotated, in our example, using the following command:
    
-    ./imglab --parts '1 2 3 4 5 6 7 8 9 10 11 12' train.xml
+    ./imglab --parts '01 02 03 04 05 06 07 08 09 10 11 12' train.xml
 
 See `./imglab -h` for other usage possibilities and the `imglab` manual for details of the annotation procedure.
 

@@ -311,17 +311,19 @@ def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample
             box.set('left', str(int(d.left())))
             box.set('width', str(int(d.right()-d.left())))
             box.set('height', str(int(d.bottom()-d.top()))) 
-            for i in range(0,shape.num_parts):
+            nparts = shape.num_parts
+            digs = int(np.ceil(np.log10(nparts)))
+            for i in range(0,nparts):
                 if ignore is not None:
                     if i not in ignore:
                         part = ET.Element('part')
-                        part.set('name',str(int(i+1)))
+                        part.set('name',str(int(i+1)).zfill(digs))
                         part.set('x',str(int(shape.part(i).x)))
                         part.set('y',str(int(shape.part(i).y)))
                         box.append(part)
                 else:
                     part = ET.Element('part')
-                    part.set('name',str(int(i+1)))
+                    part.set('name',str(int(i+1)).zfill(digs))
                     part.set('x',str(int(shape.part(i).x)))
                     part.set('y',str(int(shape.part(i).y)))
                     box.append(part)
