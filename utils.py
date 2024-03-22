@@ -315,13 +315,13 @@ def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample
                 if ignore is not None:
                     if i not in ignore:
                         part = ET.Element('part')
-                        part.set('name',str(int(i)))
+                        part.set('name',str(int(i+1)))
                         part.set('x',str(int(shape.part(i).x)))
                         part.set('y',str(int(shape.part(i).y)))
                         box.append(part)
                 else:
                     part = ET.Element('part')
-                    part.set('name',str(int(i)))
+                    part.set('name',str(int(i+1)))
                     part.set('x',str(int(shape.part(i).x)))
                     part.set('y',str(int(shape.part(i).y)))
                     box.append(part)
