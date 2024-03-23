@@ -312,7 +312,7 @@ def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample
             box.set('width', str(int(d.right()-d.left())))
             box.set('height', str(int(d.bottom()-d.top()))) 
             nparts = shape.num_parts
-            digs = int(np.ceil(np.log10(nparts)))
+            digs = int(np.floor(np.log10(nparts)) + 1)
             for i in range(0,nparts):
                 if ignore is not None:
                     if i not in ignore:
