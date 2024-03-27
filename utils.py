@@ -203,14 +203,17 @@ def generate_dlib_xml(images,sizes,folder='train',out_file='output.xml'):
 #Directory preparation tools
 
 
-def split_train_test(input_dir):
+def split_train_test(input_dir, train_dir='train', test_dir='test', replace_dir=False):
     '''
-    Splits an image directory into 'train' and 'test' directories. The original image directory is preserved. 
+    Splits an image directory into 'train' and 'test' directories (by default). The original image directory is preserved. 
     When creating the new directories, this function converts all image files to 'jpg'. The function returns
     a dictionary containing the image dimensions in the 'train' and 'test' directories.
     
     Parameters:
         input_dir(str)=original image directory
+        train_dir(str)=output directory for training data, default 'train'
+        test_dir(str)=output directory for test data, default 'test'
+        replace_dir(bool)=whether output directories replace existing ones (if any)
         
     Returns:
         sizes (dict): dictionary containing the image dimensions in the 'train' and 'test' directories.
@@ -227,14 +230,14 @@ def split_train_test(input_dir):
     train_set = filenames[:split]
     test_set = filenames[split:]
 
-    filenames = {'train':train_set,
-                 'test': test_set}
+    filenames = {train_dir:train_set,
+                 test_dir: test_set}
     sizes={}
-    for split in ['train','test']:
+    for split in [train_dir,test_dir]:
         sizes[split]={}
         if not os.path.exists(split):
             os.mkdir(split)
-        else:
+        elif replace_dir:
             print("Warning: the folder {} already exists. It's being replaced".format(split))
             shutil.rmtree(split)
             os.mkdir(split)
