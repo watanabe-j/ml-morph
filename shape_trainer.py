@@ -24,12 +24,18 @@ ap.add_argument("-nu", "--nu", type=float, default=0.1,
     help="regularization parameter (default = 0.1)", metavar='')
 ap.add_argument("-os", "--oversampling", type=int, default=10,
     help="oversampling amount (default = 10)", metavar='')
+ap.add_argument("-j", "--jitter", type=float, default=0,
+    help="oversampling translation jitter (default = 0)", metavar='')
 ap.add_argument("-s", "--test-splits", type=int, default=20,
     help="number of test splits (default = 20)", metavar='')
 ap.add_argument("-f", "--feature-pool-size", type=int, default=500,
     help="choice of feature pool size (default = 500)", metavar='')
 ap.add_argument("-n", "--num-trees", type=int, default=500,
     help="number of regression trees (default = 500)", metavar='')
+ap.add_argument("-l", "--lambda", type=float, default=0.1,
+    help="sampling distance parameter (default = 0.1)", metavar='')
+ap.add_argument("-rs", "--random-seed", type=str, default="",
+    help="random seed (default = \"\")", metavar='')
 args = vars(ap.parse_args())
 
 #Setting up the training parameters
@@ -42,6 +48,9 @@ options.cascade_depth = args['cascade_depth']
 options.feature_pool_size = args['feature_pool_size']
 options.num_test_splits = args['test_splits']
 options.oversampling_amount = args['oversampling']
+options.oversampling_translation_jitter = args['jitter']
+options.random_seed = args['random_seed']
+options.lambda_param = args['lambda']
 options.be_verbose = True
 
 #Training the model
