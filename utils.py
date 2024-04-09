@@ -300,7 +300,7 @@ def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample
     root.append(ET.Element('comment'))
     images_e = ET.Element('images')
     root.append(images_e)
-    for f in glob.glob(dir+"/*.jpg"):
+    for f in sorted(glob.glob(dir+"/*.jpg")):
         path, file = os.path.split(f)
         img = cv2.imread(f)
         image_e = ET.Element('image')
