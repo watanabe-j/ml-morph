@@ -314,7 +314,7 @@ def predict_box_shape(f, detector_name, predictor_name, upsample, threshold, ign
 
 # Tools for predicting objects and shapes in new images
 
-def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample=0,threshold=0,ignore=None,out_file='output_prediction.xml'):
+def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample=0,threshold=0,ignore=None,out_file='output_prediction.xml',nproc=None):
     '''
     Generates a dlib format xml file for model predictions. It uses previously trained models to
     identify objects in images and to predict their shape. 
@@ -343,7 +343,7 @@ def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample
     if __name__ == 'utils':
         manager = Manager()
         que = manager.Queue()
-        pool = Pool()
+        pool = Pool(nproc)
         pred_files = sorted(glob.glob(dir+"/*.jpg"))
         for f in pred_files:
             image_e = pool.apply_async(predict_box_shape,

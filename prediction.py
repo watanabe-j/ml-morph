@@ -11,7 +11,8 @@ ap.add_argument('-o','--out-file', type=str, default='output.xml', help="output 
 ap.add_argument('-u','--upsample-limit', type=int, default=0, help="upsample limit (default= 0 ; max = 2)", metavar='')
 ap.add_argument('-t','--threshold', type=float, default=0, help="detector's confidence threshold for outputting an object (default= 0)", metavar='')
 ap.add_argument('-l','--ignore-list', nargs='*', type=int, default=None, help=" (optional) prevents landmarks of choice from being output", metavar='')
-
+ap.add_argument("-n", "--n-threads", type=int, default=None,
+    help="number of threads (actually processes) to be used (default = None [all CPUs])", metavar='')
 
 
 
@@ -19,5 +20,5 @@ ap.add_argument('-l','--ignore-list', nargs='*', type=int, default=None, help=" 
 
 args = vars(ap.parse_args())
 
-utils.predictions_to_xml(args['detector'],args['predictor'], dir=args['input_dir'],upsample=args['upsample_limit'],threshold=args['threshold'],ignore=args['ignore_list'],out_file=args['out_file'])
+utils.predictions_to_xml(args['detector'],args['predictor'], dir=args['input_dir'],upsample=args['upsample_limit'],threshold=args['threshold'],ignore=args['ignore_list'],out_file=args['out_file'],nproc=args['n_threads'])
 
