@@ -7,6 +7,9 @@ import re
 import random
 import shutil
 import glob
+from multiprocessing import Pool
+from multiprocessing import Process
+from multiprocessing import Manager
 
 #Not part of the standard library
 import numpy as np 
@@ -272,6 +275,43 @@ def image_prep(file, name, dir_path):
 
         
 
+def predict_box_shape(f, detector_name, predictor_name, upsample, threshold, ignore, q):
+    predictor = dlib.shape_predictor(predictor_name)
+    detector = dlib.fhog_object_detector(detector_name)
+    path, file = os.path.split(f)
+    img = cv2.imread(f)
+    image_e = ET.Element('image')
+    image_e.set('file', str(f))
+    [boxes, confidences, detector_idxs] = dlib.fhog_object_detector.run(
+        detector, img, upsample_num_times=upsample, adjust_threshold=threshold)
+    for k, d in enumerate(boxes):    
+        shape = predictor(img, d)
+        box = ET.Element('box')
+        box.set('top', str(int(d.top())))
+        box.set('left', str(int(d.left())))
+        box.set('width', str(int(d.right()-d.left())))
+        box.set('height', str(int(d.bottom()-d.top()))) 
+        nparts = shape.num_parts
+        digs = int(np.floor(np.log10(nparts)) + 1)
+        for i in range(0,nparts):
+            if ignore is not None:
+                if i not in ignore:
+                    part = ET.Element('part')
+                    part.set('name',str(int(i+1)).zfill(digs))
+                    part.set('x',str(int(shape.part(i).x)))
+                    part.set('y',str(int(shape.part(i).y)))
+                    box.append(part)
+            else:
+                part = ET.Element('part')
+                part.set('name',str(int(i+1)).zfill(digs))
+                part.set('x',str(int(shape.part(i).x)))
+                part.set('y',str(int(shape.part(i).y)))
+                box.append(part)
+        
+        image_e.append(box)
+    q.put(image_e)
+    return image_e
+
 # Tools for predicting objects and shapes in new images
 
 def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample=0,threshold=0,ignore=None,out_file='output_prediction.xml'):
@@ -293,47 +333,27 @@ def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample
         None (out_file written to disk)
     
     '''
-    predictor = dlib.shape_predictor(predictor_name)
-    detector = dlib.fhog_object_detector(detector_name)
+
     root = ET.Element('dataset')
     root.append(ET.Element('name'))
     root.append(ET.Element('comment'))
     images_e = ET.Element('images')
     root.append(images_e)
-    for f in sorted(glob.glob(dir+"/*.jpg")):
-        path, file = os.path.split(f)
-        img = cv2.imread(f)
-        image_e = ET.Element('image')
-        image_e.set('file', str(f))
-        [boxes, confidences, detector_idxs] = dlib.fhog_object_detector.run(
-            detector, img, upsample_num_times=upsample, adjust_threshold=threshold)
-        for k, d in enumerate(boxes):    
-            shape = predictor(img, d)
-            box = ET.Element('box')
-            box.set('top', str(int(d.top())))
-            box.set('left', str(int(d.left())))
-            box.set('width', str(int(d.right()-d.left())))
-            box.set('height', str(int(d.bottom()-d.top()))) 
-            nparts = shape.num_parts
-            digs = int(np.floor(np.log10(nparts)) + 1)
-            for i in range(0,nparts):
-                if ignore is not None:
-                    if i not in ignore:
-                        part = ET.Element('part')
-                        part.set('name',str(int(i+1)).zfill(digs))
-                        part.set('x',str(int(shape.part(i).x)))
-                        part.set('y',str(int(shape.part(i).y)))
-                        box.append(part)
-                else:
-                    part = ET.Element('part')
-                    part.set('name',str(int(i+1)).zfill(digs))
-                    part.set('x',str(int(shape.part(i).x)))
-                    part.set('y',str(int(shape.part(i).y)))
-                    box.append(part)
-            
-            image_e.append(box)
-        images_e.append(image_e)
-
+    apply_res = []
+    if __name__ == 'utils':
+        manager = Manager()
+        que = manager.Queue()
+        pool = Pool()
+        pred_files = sorted(glob.glob(dir+"/*.jpg"))
+        for f in pred_files:
+            image_e = pool.apply_async(predict_box_shape,
+                                       (f, detector_name, predictor_name,
+                                        upsample, threshold, ignore, que))
+            apply_res.append(image_e)
+        pool.close()
+        pool.join()
+    for image_e in apply_res:
+        images_e.append(image_e.get())
     et = ET.ElementTree(root)
     xmlstr = minidom.parseString(ET.tostring(et.getroot())).toprettyxml(indent="   ")
     with open(out_file, "w") as f:
