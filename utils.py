@@ -275,9 +275,19 @@ def image_prep(file, name, dir_path):
 
         
 
-def predict_box_shape(f, detector_name, predictor_name, upsample, threshold, ignore, q):
-    predictor = dlib.shape_predictor(predictor_name)
+def init_pred(detector_name, predictor_name, upsample_, threshold_, ignore_):
+    global detector
+    global predictor
+    global upsample
+    global threshold
+    global ignore
     detector = dlib.fhog_object_detector(detector_name)
+    predictor = dlib.shape_predictor(predictor_name)
+    upsample = upsample_
+    threshold = threshold_
+    ignore = ignore_
+
+def predict_box_shape(f, q):
     path, file = os.path.split(f)
     img = cv2.imread(f)
     image_e = ET.Element('image')
@@ -343,12 +353,12 @@ def predictions_to_xml(detector_name:str, predictor_name:str,dir='pred',upsample
     if __name__ == 'utils':
         manager = Manager()
         que = manager.Queue()
-        pool = Pool(nproc)
+        pool = Pool(nproc, initializer = init_pred,
+                    initargs = (detector_name, predictor_name,
+                                upsample, threshold, ignore))
         pred_files = sorted(glob.glob(dir+"/*.jpg"))
         for f in pred_files:
-            image_e = pool.apply_async(predict_box_shape,
-                                       (f, detector_name, predictor_name,
-                                        upsample, threshold, ignore, que))
+            image_e = pool.apply_async(predict_box_shape, (f, que))
             apply_res.append(image_e)
         pool.close()
         pool.join()
