@@ -287,7 +287,7 @@ def init_pred(detector_name, predictor_name, upsample_, threshold_, ignore_):
     threshold = threshold_
     ignore = ignore_
 
-def predict_box_shape(f, q):
+def predict_box_shape(f, que):
     path, file = os.path.split(f)
     img = cv2.imread(f)
     image_e = ET.Element('image')
@@ -319,7 +319,7 @@ def predict_box_shape(f, q):
                 box.append(part)
         
         image_e.append(box)
-    q.put(image_e)
+    que.put(image_e)
     return image_e
 
 # Tools for predicting objects and shapes in new images
