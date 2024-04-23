@@ -36,6 +36,8 @@ ap.add_argument("-l", "--lambda", type=float, default=0.1,
     help="sampling distance parameter (default = 0.1)", metavar='')
 ap.add_argument("-rs", "--random-seed", type=str, default="",
     help="random seed (default = \"\")", metavar='')
+ap.add_argument("-v", "--verbose", default=True, action = argparse.BooleanOptionalAction,
+    help="if True, verbose output is printed (default = True)", metavar='')
 args = vars(ap.parse_args())
 
 #Setting up the training parameters
@@ -51,6 +53,7 @@ options.oversampling_amount = args['oversampling']
 options.oversampling_translation_jitter = args['jitter']
 options.random_seed = args['random_seed']
 options.lambda_param = args['lambda']
+options.be_verbose = args['verbose']
 
 outfile_name = args['out']
 if not outfile_name.endswith('.dat'):
